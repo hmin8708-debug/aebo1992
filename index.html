@@ -239,9 +239,15 @@
             margin-top: 5px;
             display: none;
         }
+
+        #hidden_iframe {
+            display: none;
+        }
     </style>
 </head>
 <body>
+    <iframe name="hidden_iframe" id="hidden_iframe"></iframe>
+
     <div class="container">
         <div id="registrationForm" class="registration-form">
             <div class="logo-container">
@@ -250,36 +256,38 @@
             
             <div class="title">3만원 시식권</div>
             
-            <div class="form-group">
-                <label class="form-label">이름</label>
-                <input type="text" id="userName" class="form-input" placeholder="이름을 입력하세요">
-                <div id="nameError" class="error-message">이름을 입력해주세요</div>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">연락처</label>
-                <input type="tel" id="userPhone" class="form-input" placeholder="010-0000-0000">
-                <div id="phoneError" class="error-message">연락처를 입력해주세요</div>
-            </div>
+            <form id="googleForm" action="https://docs.google.com/forms/d/e/1FAIpQLSe1I7bfeL_ZbBeLVt_bH_kFhvN9ExO93_yoiCIxCfyhIw0Lgg/formResponse" method="POST" target="hidden_iframe" onsubmit="return submitForm()">
+                <div class="form-group">
+                    <label class="form-label">이름</label>
+                    <input type="text" id="userName" name="entry.291398770" class="form-input" placeholder="이름을 입력하세요">
+                    <div id="nameError" class="error-message">이름을 입력해주세요</div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">연락처</label>
+                    <input type="tel" id="userPhone" name="entry.921440207" class="form-input" placeholder="010-0000-0000">
+                    <div id="phoneError" class="error-message">연락처를 입력해주세요</div>
+                </div>
 
-            <div class="form-group">
-                <label class="form-label">사용 매장</label>
-                <input type="text" id="storeName" class="form-input" placeholder="매장명을 입력하세요">
-                <div id="storeError" class="error-message">사용 매장을 입력해주세요</div>
-            </div>
+                <div class="form-group">
+                    <label class="form-label">사용 매장</label>
+                    <input type="text" id="storeName" name="entry.1038325025" class="form-input" placeholder="매장명을 입력하세요">
+                    <div id="storeError" class="error-message">사용 매장을 입력해주세요</div>
+                </div>
 
-            <div class="checkbox-group">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="privacyConsent" class="checkbox-input">
-                    <span>개인정보 수집 및 이용에 동의합니다. (필수)<br>
-                    • 수집하는 개인정보 항목: 이름, 연락처<br>
-                    • 수집 및 이용 목적: 시식권 이용자정보 이벤트 진행 및 당첨자 안내<br>
-                    • 보유 및 이용기간: 사용후 1년보관</span>
-                </label>
-            </div>
-            <div id="consentError" class="error-message" style="margin-top: -15px; margin-bottom: 10px;">개인정보 수집 및 이용에 동의해주세요</div>
-            
-            <button class="submit-button" onclick="registerVoucher()">시식권 등록하기</button>
+                <div class="checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="privacyConsent" class="checkbox-input">
+                        <span>개인정보 수집 및 이용에 동의합니다. (필수)<br>
+                        • 수집하는 개인정보 항목: 이름, 연락처<br>
+                        • 수집 및 이용 목적: 시식권 이용자정보 이벤트 진행 및 당첨자 안내<br>
+                        • 보유 및 이용기간: 사용후 1년보관</span>
+                    </label>
+                </div>
+                <div id="consentError" class="error-message" style="margin-top: -15px; margin-bottom: 10px;">개인정보 수집 및 이용에 동의해주세요</div>
+                
+                <button type="submit" class="submit-button">시식권 등록하기</button>
+            </form>
         </div>
 
         <div id="voucherScreen" class="voucher-screen">
@@ -322,7 +330,7 @@
             used: false
         };
 
-        function registerVoucher() {
+        function submitForm() {
             const name = document.getElementById('userName').value.trim();
             const phone = document.getElementById('userPhone').value.trim();
             const store = document.getElementById('storeName').value.trim();
@@ -355,7 +363,7 @@
                 hasError = true;
             }
             
-            if (hasError) return;
+            if (hasError) return false;
             
             voucherData.name = name;
             voucherData.phone = phone;
@@ -365,35 +373,13 @@
             document.getElementById('displayPhone').textContent = phone;
             document.getElementById('displayStore').textContent = store;
             
-            // Google Forms로 제출
-            const form = document.createElement('form');
-            form.action = 'https://docs.google.com/forms/d/e/1FAIpQLSe1I7bfeL_ZbBeLVt_bH_kFhvN9ExO93_yoiCIxCfyhIw0Lgg/formResponse';
-            form.method = 'POST';
-            form.target = '_blank';
-            
-            const fields = {
-                'entry.291398770': name,
-                'entry.921440207': phone,
-                'entry.1038325025': store
-            };
-            
-            Object.keys(fields).forEach(key => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = key;
-                input.value = fields[key];
-                form.appendChild(input);
-            });
-            
-            document.body.appendChild(form);
-            form.submit();
-            document.body.removeChild(form);
-            
             // 화면 전환
             setTimeout(() => {
                 document.getElementById('registrationForm').style.display = 'none';
                 document.getElementById('voucherScreen').style.display = 'block';
             }, 500);
+
+            return true;
         }
 
         function useVoucher() {
