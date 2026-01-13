@@ -262,11 +262,19 @@
                 <div id="phoneError" class="error-message">연락처를 입력해주세요</div>
             </div>
 
+            <div class="form-group">
+                <label class="form-label">사용 매장</label>
+                <input type="text" id="storeName" class="form-input" placeholder="매장명을 입력하세요">
+                <div id="storeError" class="error-message">사용 매장을 입력해주세요</div>
+            </div>
+
             <div class="checkbox-group">
                 <label class="checkbox-label">
                     <input type="checkbox" id="privacyConsent" class="checkbox-input">
                     <span>개인정보 수집 및 이용에 동의합니다. (필수)<br>
-                    수집항목: 이름, 연락처 | 이용목적: 시식권 발급 및 관리</span>
+                    • 수집하는 개인정보 항목: 이름, 연락처<br>
+                    • 수집 및 이용 목적: 시식권 이용자정보 이벤트 진행 및 당첨자 안내<br>
+                    • 보유 및 이용기간: 사용후 1년보관</span>
                 </label>
             </div>
             <div id="consentError" class="error-message" style="margin-top: -15px; margin-bottom: 10px;">개인정보 수집 및 이용에 동의해주세요</div>
@@ -285,6 +293,7 @@
                 <div class="user-info">
                     <div><strong>이름:</strong> <span id="displayName"></span></div>
                     <div><strong>연락처:</strong> <span id="displayPhone"></span></div>
+                    <div><strong>사용 매장:</strong> <span id="displayStore"></span></div>
                 </div>
             </div>
             
@@ -309,16 +318,19 @@
         let voucherData = {
             name: '',
             phone: '',
+            store: '',
             used: false
         };
 
         function registerVoucher() {
             const name = document.getElementById('userName').value.trim();
             const phone = document.getElementById('userPhone').value.trim();
+            const store = document.getElementById('storeName').value.trim();
             const consent = document.getElementById('privacyConsent').checked;
             
             document.getElementById('nameError').style.display = 'none';
             document.getElementById('phoneError').style.display = 'none';
+            document.getElementById('storeError').style.display = 'none';
             document.getElementById('consentError').style.display = 'none';
             
             let hasError = false;
@@ -333,6 +345,11 @@
                 hasError = true;
             }
 
+            if (!store) {
+                document.getElementById('storeError').style.display = 'block';
+                hasError = true;
+            }
+
             if (!consent) {
                 document.getElementById('consentError').style.display = 'block';
                 hasError = true;
@@ -342,12 +359,41 @@
             
             voucherData.name = name;
             voucherData.phone = phone;
+            voucherData.store = store;
             
             document.getElementById('displayName').textContent = name;
             document.getElementById('displayPhone').textContent = phone;
+            document.getElementById('displayStore').textContent = store;
             
-            document.getElementById('registrationForm').style.display = 'none';
-            document.getElementById('voucherScreen').style.display = 'block';
+            // Google Forms로 제출
+            const form = document.createElement('form');
+            form.action = 'https://docs.google.com/forms/d/e/1FAIpQLSe1I7bfeL_ZbBeLVt_bH_kFhvN9ExO93_yoiCIxCfyhIw0Lgg/formResponse';
+            form.method = 'POST';
+            form.target = '_blank';
+            
+            const fields = {
+                'entry.291398770': name,
+                'entry.921440207': phone,
+                'entry.1038325025': store
+            };
+            
+            Object.keys(fields).forEach(key => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = fields[key];
+                form.appendChild(input);
+            });
+            
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+            
+            // 화면 전환
+            setTimeout(() => {
+                document.getElementById('registrationForm').style.display = 'none';
+                document.getElementById('voucherScreen').style.display = 'block';
+            }, 500);
         }
 
         function useVoucher() {
